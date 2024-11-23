@@ -1,115 +1,114 @@
-#include<stdio.h>
-#include<time.h>
-#include<stdlib.h>
-int main()
-{
-    int choice;
-    float answer;
-    int i;
-    char sign[] = {'+','-','*','/'};
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <math.h>
 
-    srand(time(0));
+// Function declarations
+char getRandomOperator();
+double calculateResult1(double num1, double num2, char operator);
+double calculateResult2(double num1, double num2,double num3, char operator);
+int askQuestion(double num1, double num2, char operator);
+void runQuiz(int difficulty);
+
+int main() {
+    srand(time(0)); // Seed for random number generation
+    int choice;
 
     printf("Welcome to Math Quiz\n");
     printf("Select difficulty level: 1. Easy  2. Hard:\n");
-    scanf("%d",&choice);
-    
+    scanf("%d", &choice);
 
-    switch (choice)
-    {
-    case 1:
-    printf("You selected Easy\n");
-    int score = 0;
-        for ( i = 1; i < 5; i++)
-        {
-            float num1 = rand() % 100 + 1;  
-            float num2 = rand() % 100 + 1;
-            char size = sizeof(sign) / sizeof(sign[0]);
-            char random = rand() % size;
-            char signval = sign[random];
-            double result;
-            switch (signval) {
-        case '+':
-            result = num1 + num2;
+    switch (choice) {
+        case 1:
+            printf("You selected Easy mode.\n");
+            runQuiz(1);
             break;
-        case '-':
-            result = num1 - num2;
-            break;
-        case '*':
-            result = num1 * num2;
-            break;
-        case '/':
-            if (num2 != 0) {
-                result = num1 / num2;
-            } else {
-                printf("Error: Division by zero!\n");
-                return 1; 
-            }
+        case 2:
+            printf("You selected Hard mode.\n");
+            runQuiz(2);
             break;
         default:
-            printf("Invalid operator!\n");
-            return 1; 
-            }
-            printf("Question %d: %0.1f %c %0.1f = ?\n",i,num1,signval,num2);
-            printf("Your answer:\n");
-            scanf("%f",&answer);
-            if (answer == result)
-            {
-                score++;
-                printf("Correct!\n");
-                
-            }
-            
-            
-            
-        }
-        printf("Your final score:%d\n",score);
-        
-        break;
-    case 2:
-    printf("You selected Hard\n");
-    score = 0;
-    for ( i = 1; i < 5; i++)
-    {
-        float num1 = rand() % 100 + 1;  
-        float num2 = rand() % 100 + 1;
-        float num3 = rand() % 100 + 1;
-        char size = sizeof(sign) / sizeof(sign[0]);
-        char random = rand() % size;
-        char signval = sign[random];
-        float result;
-        switch (signval) {
-        case '+':
-            result = (num3 - num2)/num1;
+            printf("Invalid choice. Please restart the program.\n");
             break;
-        case '-':
-            result = (num3 + num2)/num1;
-            break;
-        case '*':
-            result = num3 / (num1*num3);
-            break;
-        case '/':
-            if (num2 != 0) {
-                result = (num3*num2) / num1;
-            } else {
-                printf("Error: Division by zero!\n");
-                return 1; 
-            }
-            break;
-        default:
-            printf("Invalid operator!\n");
-            return 1; 
-        }
-        printf("Question: %0.1fx %c %0.1f = %0.1f\n",num1,signval,num2,num3);
-        printf("Your answer:\n");
-        scanf("%f",&answer);
-        if (answer == result){
-            score++;
-            printf("Correct!\n");
-        }
-
     }
-    
+
+    return 0;
+}
+char getRandomOperator() {
+    char operators[] = {'+', '-', '*', '/'};
+    int size = sizeof(operators) / sizeof(operators[0]);
+    return operators[rand() % size]; // Randomly select an operator
+}
+
+double calculateResult1(double num1, double num2, char operator) {
+    switch (operator) {
+        case '+': return num1 + num2;
+        case '-': return num1 - num2;
+        case '*': return num1 * num2;
+        case '/': return (num2 != 0) ? num1 / num2 : NAN; // Handle division by zero
+        default: return NAN; // Invalid operator
+    }
+}
+
+double calculateResult2(double num1, double num2, double num3, char operator) {
+    switch (operator) {
+        case '+': return (num3 - num2) / num1;
+        case '-': return (num3 + num2) / num1;
+        case '*': return (num1 != 0) ? num3 / (num1 * num3) : NAN; // Avoid division by zero
+        case '/': return (num2 != 0) ? (num3 * num2) / num1 : NAN; // Avoid division by zero
+        default: return NAN; // Invalid operator
+    }
+}
+
+int askQuestion(double num1, double num2, char operator) {
+    double correctAnswer = calculateResult1(num1, num2, operator);
+    double userAnswer;
+
+    printf("What is %.1f %c %.1f? ", num1, operator, num2);
+    scanf("%lf", &userAnswer);
+
+    if (fabs(userAnswer - correctAnswer) < 0.01) { // Allow for minor floating-point errors
+        printf("Correct!\n");
+        return 1; // Correct answer
+    } else {
+        printf("Wrong! The correct answer was %.2f.\n", correctAnswer);
+        return 0; // Incorrect answer
+    }
+}
+void runQuiz(int difficulty) {
+    int score = 0;
+    int numQuestions = 5; // Number of questions
+
+    for (int i = 0; i < numQuestions; i++) {
+        double num1 = rand() % 100 + 1; // Random number between 1 and 100
+        double num2 = rand() % 100 + 1;
+        char operator = getRandomOperator();
+
+        if (difficulty == 1) { // Easy mode
+            score += askQuestion(num1, num2, operator);
+        } else if (difficulty == 2) { // Hard mode
+            double num3 = rand() % 100 + 1; // A third random number for hard mode
+            printf("Solve for x: %.1f %c %.1f = %.1f\n", num1, operator, num2, num3);
+            
+            // Calculate the answer for hard mode
+            double correctAnswer = calculateResult2(num1, num2, num3, operator);
+            double userAnswer;
+            scanf("%lf", &userAnswer);
+
+            if (fabs(userAnswer - correctAnswer) < 0.01) {
+                printf("Correct!\n");
+                score++;
+            } else {
+                printf("Wrong! The correct answer was %.2f.\n", correctAnswer);
+            }
+        }
+    }
+
+    printf("Your final score: %d/%d\n", score, numQuestions);
+}
+
+
+
     
     default:
         break;
